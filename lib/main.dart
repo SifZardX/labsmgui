@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';  // Import for EncryptedSharedPreferences
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:lab02/ProfilePage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,11 +13,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Login Demo',
+      title: 'Flutter Demo',
       theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Login Page'),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -30,98 +33,94 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // Variables for text fields
-  final TextEditingController _loginController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  // SharedPreferences or EncryptedSharedPreferences instance
-  late EncryptedSharedPreferences encryptedPrefs;
+  late TextEditingController _controller;
+  late TextEditingController _controller2;
+  var imageSource = "images/question-mark.jpg";
+  final EncryptedSharedPreferences _encryptedPrefs = EncryptedSharedPreferences();
 
   @override
   void initState() {
     super.initState();
-    encryptedPrefs = EncryptedSharedPreferences(); // Initialize encrypted shared preferences
-    _loadLoginData();
+    _controller = TextEditingController();
+    _controller2 = TextEditingController();
+    _loadCredentials();
   }
 
-  // Load saved login data from EncryptedSharedPreferences
-  void _loadLoginData() async {
-    String? savedLogin = await encryptedPrefs.getString('username');
-    String? savedPassword = await encryptedPrefs.getString('password');
+  @override
+  void dispose() {
+    _controller.dispose();
+    _controller2.dispose();
+    super.dispose();
+  }
 
-    if (savedLogin != null && savedPassword != null) {
-      _loginController.text = savedLogin;
-      _passwordController.text = savedPassword;
+  void _loadCredentials() async {
+    String? savedUsername = await _encryptedPrefs.getString('username');
+    String? savedPassword = await _encryptedPrefs.getString('password');
 
-      // Show Snackbar
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Previous login credentials loaded!'),
-        action: SnackBarAction(
-          label: 'Undo',
-          onPressed: _undoReset,
-        ),
-      ));
+    if (savedUsername != null && savedPassword != null) {
+      setState(() {
+        _controller.text = savedUsername;
+        _controller2.text = savedPassword;
+      });
+      _showSnackbar('Previous login loaded');
     }
   }
 
-  // Undo function: Reset text fields but don't remove data from EncryptedSharedPreferences
-  void _undoReset() {
-    setState(() {
-      _loginController.clear();
-      _passwordController.clear();
-    });
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  // Show an AlertDialog to confirm if user wants to save their login data
-  void _showSaveDialog() async {
-    bool saveData = await showDialog<bool>(
+  void _showSaveDialog() {
+    showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Save Login Credentials'),
-          content: const Text('Do you want to save your username and password for future logins?'),
-          actions: <Widget>[
+          title: const Text("Save Login Credentials?"),
+          content: const Text("Do you want to save your username and password?"),
+          actions: [
             TextButton(
+              child: const Text("Cancel"),
               onPressed: () {
-                Navigator.of(context).pop(false); // Don't save data
+                _encryptedPrefs.clear();
+                Navigator.of(context).pop();
               },
-              child: const Text('No'),
             ),
             TextButton(
+              child: const Text("Save"),
               onPressed: () {
-                Navigator.of(context).pop(true); // Save data
+                _saveCredentials();
+                Navigator.of(context).pop();
               },
-              child: const Text('Yes'),
             ),
           ],
         );
       },
-    ) ?? false; // Default to false if dialog is dismissed
+    );
+  }
 
-    if (saveData) {
-      _saveLoginData();
+  void _saveCredentials() async {
+    String username = _controller.text;
+    String password = _controller2.text;
+
+    await _encryptedPrefs.setString('username', username);
+    await _encryptedPrefs.setString('password', password);
+
+    if (password == "QWERTY123") {
+      setState(() {
+        imageSource = "images/light-bulb.jpg";
+      });
+      _showSnackbar('Login successful! Navigating to Profile...');
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProfilePage(username: username),
+        ),
+      );
     } else {
-      _clearLoginData();
+      setState(() {
+        imageSource = "images/stop-sign.jpg";
+      });
     }
-  }
-
-  // Save the username and password to EncryptedSharedPreferences
-  void _saveLoginData() async {
-    await encryptedPrefs.setString('username', _loginController.text);
-    await encryptedPrefs.setString('password', _passwordController.text);
-    print('Login data saved');
-  }
-
-  // Clear the saved login data from EncryptedSharedPreferences
-  void _clearLoginData() async {
-    await encryptedPrefs.remove('username');
-    await encryptedPrefs.remove('password');
-    print('Login data cleared');
-  }
-
-  // Handle the login button click event
-  void _login() {
-    _showSaveDialog();
   }
 
   @override
@@ -132,29 +131,38 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              TextField(
-                controller: _loginController,
-                decoration: const InputDecoration(labelText: 'Login Name'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            TextField(
+              controller: _controller,
+              decoration: const InputDecoration(
+                hintText: "Login",
+                border: OutlineInputBorder(),
+                labelText: "Login",
               ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Password'),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _controller2,
+              decoration: const InputDecoration(
+                hintText: "Password",
+                border: OutlineInputBorder(),
+                labelText: "Password",
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _login,
-                child: const Text('Login'),
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
+              obscureText: true,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _showSaveDialog,
+              child: const Text("Login"),
+            ),
+            Image.asset(
+              imageSource,
+              width: 300,
+              height: 300,
+            ),
+          ],
         ),
       ),
     );

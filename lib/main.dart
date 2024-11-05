@@ -10,91 +10,116 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Login Demo',
+      title: 'Recipe Demo',
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Login Page'),
+      home: const MyHomePage(title: 'Recipe Categories'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key, required this.title});
 
   final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  // Variables for text fields and image source
-  final TextEditingController _loginController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  var imageSource = "images/question-mark.png"; // Default image
-
-  void _login() {
-    // Capture the password typed in the password field
-    String password = _passwordController.text;
-
-    setState(() {
-      // If the password is correct, set the image to the light bulb.
-      if (password == "QWERTY123") {
-        imageSource = "images/idea.png";
-      } else {
-        // If incorrect, set the image to the stop sign.
-        imageSource = "images/stop.png";
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: Text(title),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              // Text field for login name (optional, based on requirements)
-              TextField(
-                controller: _loginController,
-                decoration: const InputDecoration(labelText: 'Login Name'),
-              ),
-              const SizedBox(height: 20),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Space between items in the column
+          children: <Widget>[
+            // Row 1: Left-aligned text
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: const [
+                Text('By Course', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 10),
 
-              // Text field for password with obscure text (for password security)
-              TextField(
-                controller: _passwordController,
-                obscureText: true, // This hides the password text as it is typed
-                decoration: const InputDecoration(labelText: 'Password'),
-              ),
-              const SizedBox(height: 20),
+            // Row 2: Image Row (Beef, Chicken, Pork, Seafood)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround, // Space around images
+              children: [
+                _buildImageWithText('images/beef.jpg', 'Beef'),
+                _buildImageWithText('images/chicken.jpg', 'Chicken'),
+                _buildImageWithText('images/pork.jpg', 'Pork'),
+                _buildImageWithText('images/seafood.jpg', 'Seafood'),
+              ],
+            ),
+            const SizedBox(height: 10),
 
-              // Elevated button to trigger login action
-              ElevatedButton(
-                onPressed: _login,
-                child: const Text('Login'),
-              ),
-              const SizedBox(height: 20),
+            // Row 3: Image Stack (Main dishes, Salad Recipes, etc.)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround, // Space around images
+              children: [
+                _buildStackImage('images/maindishes.jpg', 'Main Dishes'),
+                _buildStackImage('images/salad.jpg', 'Salad Recipes'),
+                _buildStackImage('images/sidedishes.jpg', 'Side Dishes'),
+                _buildStackImage('images/crockpot.jpg', 'Crockpot'),
+              ],
+            ),
+            const SizedBox(height: 10),
 
-              // Image that will change based on password input
-              Image.asset(
-                imageSource,
-                width: 300,  // Set the width and height of the image to 300 x 300
-                height: 300,
-              ),
-            ],
-          ),
+            // Row 4: Dessert Row with Stack
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround, // Space around images
+              children: [
+                _buildStackImage('images/icecream.jpg', 'Ice Cream'),
+                _buildStackImage('images/brownies.jpg', 'Brownies'),
+                _buildStackImage('images/pies.jpg', 'Pies'),
+                _buildStackImage('images/cookies.jpg', 'Cookies'),
+              ],
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  // Helper method to create an image with centered text
+  Widget _buildImageWithText(String imagePath, String text) {
+    return Column(
+      children: [
+        CircleAvatar(
+          backgroundImage: AssetImage(imagePath),
+          radius: 50,  // Set the radius of the CircleAvatar to make the circle frame
+        ),
+        const SizedBox(height: 5),
+        Text(text),
+      ],
+    );
+  }
+
+  // Helper method to create a Stack widget with text on top of image
+  Widget _buildStackImage(String imagePath, String text) {
+    return Stack(
+      alignment: Alignment.bottomCenter,  // Position the text at the bottom center
+      children: [
+        CircleAvatar(
+          backgroundImage: AssetImage(imagePath),
+          radius: 50,  // Set the radius of the CircleAvatar to make the circle frame
+        ),
+        Positioned(
+          bottom: 10,  // Adjust text position to make it appear at the bottom
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

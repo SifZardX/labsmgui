@@ -101,6 +101,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _saveCredentials() async {
     String username = _controller.text;
     String password = _controller2.text;
+    String testString = "";
 
     await _encryptedPrefs.setString('username', username);
     await _encryptedPrefs.setString('password', password);

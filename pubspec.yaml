@@ -11,7 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  shared_preferences: ^2.3.2
+  shared_preferences: ^2.1.0  # Shared preferences for saving data
+  encrypted_shared_preferences: ^3.0.1  # Updated to a compatible version
 
 dev_dependencies:
   flutter_test:
@@ -34,4 +35,3 @@ flutter:
     - images/pies.jpg
     - images/salad.jpg
     - images/seafood.jpg
-

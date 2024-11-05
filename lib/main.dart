@@ -10,12 +10,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Login Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Login Page'),
     );
   }
 }
@@ -30,15 +29,24 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // Step 1: Change _counter variable to use 'var' instead of 'double'
-  var _counter = 0.0; // Initialize _counter as a double using var
-  var myFontSize = 30.0; // Step 2: Declare myFontSize variable
+  // Variables for text fields and image source
+  final TextEditingController _loginController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-  // Step 4: Modify setNewValue to also change the font size
-  void _incrementCounter(double newValue) {
+  var imageSource = "images/question-mark.png"; // Default image
+
+  void _login() {
+    // Capture the password typed in the password field
+    String password = _passwordController.text;
+
     setState(() {
-      _counter = newValue;
-      myFontSize = newValue; // Adjust font size as well when the slider changes
+      // If the password is correct, set the image to the light bulb.
+      if (password == "QWERTY123") {
+        imageSource = "images/idea.png";
+      } else {
+        // If incorrect, set the image to the stop sign.
+        imageSource = "images/stop.png";
+      }
     });
   }
 
@@ -50,43 +58,42 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            // Text showing the number of times the button is pressed
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter', // Show the current counter value
-              style: TextStyle(fontSize: myFontSize), // Use myFontSize for font size
-            ),
-            Slider(
-              value: _counter,
-              min: 0.0,
-              max: 100.0,
-              divisions: 100,
-              onChanged: (double newValue) {
-                _incrementCounter(newValue); // Update both _counter and myFontSize
-              },
-            ),
-            Text(
-              'Font Size: ${myFontSize.toStringAsFixed(2)}', // Display current font size
-              style: TextStyle(fontSize: myFontSize), // Update font size
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              // Text field for login name (optional, based on requirements)
+              TextField(
+                controller: _loginController,
+                decoration: const InputDecoration(labelText: 'Login Name'),
+              ),
+              const SizedBox(height: 20),
+
+              // Text field for password with obscure text (for password security)
+              TextField(
+                controller: _passwordController,
+                obscureText: true, // This hides the password text as it is typed
+                decoration: const InputDecoration(labelText: 'Password'),
+              ),
+              const SizedBox(height: 20),
+
+              // Elevated button to trigger login action
+              ElevatedButton(
+                onPressed: _login,
+                child: const Text('Login'),
+              ),
+              const SizedBox(height: 20),
+
+              // Image that will change based on password input
+              Image.asset(
+                imageSource,
+                width: 300,  // Set the width and height of the image to 300 x 300
+                height: 300,
+              ),
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Use the slider's value for both counter and font size change
-          setState(() {
-            _counter++;
-            myFontSize = _counter; // Set the font size equal to the counter value
-          });
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }

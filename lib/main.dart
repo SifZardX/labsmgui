@@ -1,146 +1,117 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(TodoApp());
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
+class TodoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Food Categories Demo',
-      theme: ThemeData(
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Food Categories Page'),
+      home: TodoList(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
+class TodoList extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _TodoListState createState() => _TodoListState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _TodoListState extends State<TodoList> {
+  // List to store items
+  List<String> words = [];
+  // Controller for the TextField input
+  final TextEditingController _controller = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('images/background.jpg'),  // Your background image here
-            fit: BoxFit.cover,
+      appBar: AppBar(title: Text("To-Do List")),
+      body: Column(
+        children: [
+          // Row with TextField and Add Button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
+                child: Text("Add item"),
+                onPressed: () {
+                  setState(() {
+                    words.add(_controller.text);
+                    _controller.clear();
+                  });
+                },
+              ),
+              // TextField for user input
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  decoration: InputDecoration(
+                    hintText: "Enter new item",
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                // Title Row (Centered)
-                const Text(
-                  'By Course',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-
-                // By Course Images Row (Space Between)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildCategoryImage('images/baconegg.JPG', 'Breakfast'),
-                    _buildCategoryImage('images/lunch.png', 'Lunch'),
-                    _buildCategoryImage('images/dinner.png', 'Dinner'),
-                    _buildCategoryImage('images/appetizer.png', 'Appetizer'),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // "By Meat" Section
-                const Text(
-                  'By Meat',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildCategoryImage('images/beef.jpg', 'Beef'),
-                    _buildCategoryImage('images/chicken.jpg', 'Chicken'),
-                    _buildCategoryImage('images/pork.png', 'Pork'),
-                    _buildCategoryImage('images/seafood.jpg', 'Seafood'),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // "By Dessert" Section
-                const Text(
-                  'By Dessert',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildCategoryImage('images/browns.png', 'Brownies'),
-                    _buildCategoryImage('images/piess.jpg', 'Pies'),
-                    _buildCategoryImage('images/cookies.jpg', 'Cookies'),
-                    _buildCategoryImage('images/icecream.jpg', 'Ice Cream'),
-                  ],
-                ),
-                const SizedBox(height: 20),
-              ],
+          // Expanded ListView inside Column
+          Expanded(
+            child: words.isEmpty
+                ? Center(child: Text("There are no items in the list"))
+                : ListView.builder(
+              itemCount: words.length,
+              itemBuilder: (context, rowNum) {
+                return GestureDetector(
+                  onLongPress: () {
+                    _showDeleteDialog(rowNum);
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Row number: $rowNum"),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(words[rowNum]),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  // Helper function to build the category images with text overlay
-  Widget _buildCategoryImage(String imagePath, String label) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            CircleAvatar(
-              backgroundImage: AssetImage(imagePath),
-              radius: 50,
+  // Function to show dialog on long press
+  void _showDeleteDialog(int rowNum) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Delete Item"),
+          content: Text("Are you sure you want to delete this item?"),
+          actions: [
+            TextButton(
+              child: Text("No"),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog without deleting
+              },
             ),
-            Positioned(
-              bottom: 5,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                color: Colors.black.withOpacity(0.5),
-                child: Text(
-                  label,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ),
+            TextButton(
+              child: Text("Yes"),
+              onPressed: () {
+                setState(() {
+                  words.removeAt(rowNum); // Delete item
+                });
+                Navigator.of(context).pop(); // Close dialog after deleting
+              },
             ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }
